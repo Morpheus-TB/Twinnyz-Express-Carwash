@@ -1,0 +1,55 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Attendant {
+  id         Int          @id @default(autoincrement())
+  name       String
+  active     Boolean      @default(true)
+  attendance Attendance[]
+  tips       Tip[]
+  createdAt  DateTime     @default(now())
+}
+
+model VehicleRecord {
+  id         Int      @id @default(autoincrement())
+  plate      String
+  model      String
+  service    String
+  attendants String[]
+  cost       Float
+  status     String   @default("In Progress") // In Progress, Completed, Paid
+  createdAt  DateTime @default(now())
+  Payment    Payment?
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  vehicleRecord   VehicleRecord @relation(fields: [vehicleRecordId], references: [id])
+  vehicleRecordId Int           @unique
+  amount          Float
+  paymentMethod   String        // M-PESA, Cash
+  mpesaDetails    String?       // Pochi La Biashara Log Details
+  createdAt       DateTime      @default(now())
+}
+
+model Attendance {
+  id          Int       @id @default(autoincrement())
+  attendant   Attendant @relation(fields: [attendantId], references: [id])
+  attendantId Int
+  clockIn     DateTime  @default(now())
+  clockOut    DateTime?
+}
+
+model Tip {
+  id          Int       @id @default(autoincrement())
+  attendant   Attendant @relation(fields: [attendantId], references: [id])
+  attendantId Int
+  amount      Float
+  createdAt   DateTime  @default(now())
+}
